@@ -149,7 +149,7 @@ https://rpubs.com/williamsurles/293454
 Despite having two measures of yield per farmer, the experiment2017 dataset has only one row per farmer. This is because it is in what is known as "wide" format. To better picture what we mean by  "wide" format, let's imagine a few farmers that would have collected 4 measures of yield. One for each of three treatments, and one for the control parcel. The data for these farmers would look like the following:
 
 
-```{r echo=FALSE, out.width="60%", fig.align='center'}
+```{r echo=FALSE, out.width="50%", fig.align='center'}
 knitr::include_graphics("images/WideCCRP.JPG")
 ```
 
@@ -157,7 +157,7 @@ knitr::include_graphics("images/WideCCRP.JPG")
 
 But this is not the format which R generally likes to operate on - R much prefers "long" format where we have one row per observation. In our little example, we had 4 observations per farmer, so in "long" format, we would have four rows for each farmer and instead of 4 numeric yield variables, we would only have two columns. A numeric one containing the values of yield, and a categorical one indicating the treatment or type of parcel on which the yield was measured:
 
-```{r echo=FALSE, out.width="50%", fig.align='center'}
+```{r echo=FALSE, out.width="35%", fig.align='center'}
 knitr::include_graphics("images/longCCRP.jpg")
 ```
 
