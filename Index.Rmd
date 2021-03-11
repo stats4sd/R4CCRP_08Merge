@@ -16,7 +16,6 @@ library(dplyr)
 library(ggplot2)
 library(tidyr)
 library(learnr)
-#library(tibble)
 
 experiment2017<-read.csv("experiment2017.csv")
 interview2019<-read.csv("interview2019.csv")
