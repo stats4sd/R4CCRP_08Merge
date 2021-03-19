@@ -19,11 +19,15 @@ library(learnr)
 
 experiment2017<-read.csv("experiment2017.csv")
 interview2019<-read.csv("interview2019.csv")
+experiment2017$Farmer <- iconv(experiment2017$Farmer, to = "UTF-8")
+Encoding(experiment2017$Farmer) <- "UTF-8"
+interview2019$Name <- iconv(interview2019$Name, "UTF-8")
+Encoding(interview2019$Name) <- "UTF-8"
 
 MergedData<-inner_join(experiment2017,interview2019,by=c("Farmer"="Name"))
 
 LongData <- MergedData %>%
-  pivot_longer(cols=Control:Treatment, names_to="Parcel_type",values_to="Yield")
+  pivot_longer(cols=Control:Treatment, names_to="Plot_type",values_to="Yield")
 
 
 ```
@@ -52,9 +56,9 @@ library(tidyr)
 
 ## Data for this session
 
-In this session we will use two related fictive datasets. The first one, called `experiment2017` is an on farm experiment, where each of 20 farmers has collected values of yield for two parcels, one where a new treatment has been applied (column "Treatment"), and one where this new treatment has not been applied (column "Control").
+In this session we will use two related fictive datasets. The first one, called `experiment2017` is an on farm experiment, where each of 20 farmers has collected values of yield for two plots, one where a new treatment has been applied (column "Treatment"), and one where this new treatment has not been applied (column "Control"). You can download this dataset [here](https://github.com/stats4sd/R4CCRP_08Merge/raw/main/experiment2017.csv)  
 
-The other dataset called `interview2019` contains the responses of 71 farmers - some of which participated in the 2017 experiment - when asked whether they would accept to participate to a new experiment (column "Accept").
+The other dataset called `interview2019` contains the responses of 71 farmers - some of which participated in the 2017 experiment - when asked whether they would accept to participate to a new experiment (column "Accept"). You can download this dataset [here](https://github.com/stats4sd/R4CCRP_08Merge/raw/main/interview2019.csv) 
 
 Our goal will be to combine these two datasets in order to explore whether for a farmer, the outcome of the 2017 experiment is related to their willingness to participate in a new experiment.
 
@@ -100,10 +104,10 @@ full_join(experiment2017,interview2019,by=c("Farmer"="Name"))
 As you see, in the *by* statement, we indicated the column name `Farmer` of the first indicated dataset (`experiment2017`) on the left of the equal sign, and the column name `Name` of the second dataset (`interview2019`) on its right. The order matters.
 
 
-Also note that none of the farmers have the same name in our datasets, but in general this can easily happen, which would mess up our join as R would be unable to know how to combine the multiple rows with same names. That's why you should always use an ID variable - or combination of variables - that you **know** will be unique to each farmer. A good way to ensure that is to generate and assign a unique ID to each farmer yourself.
+Also note that none of the farmers have the same name, but in general this can easily happen, which would mess up our join as R would be unable to know how to combine the multiple rows with same names. That's why you should always use an ID variable - or combination of variables - that you **know** will be unique to each farmer. A good way to ensure that is to generate and assign a unique ID to each farmer yourself.
 
 
-Anyway, back to the result of `full_join()`. If you carefully check the output, you will see that there is quite a number of missing values in it (`NA`). This is because we kept the data of every farmer and lots of farmers are only in one of the two datasets. When it is the case, the rest of the data is filled with NAs. 
+Anyway, back to the result of `full_join()`. We started with two dataframes, one with 20 farmers, the other one with 71 farmers, and the resulting dataframe contains 80, which is the total number of distinct farmers. If you carefully check the output, you will see that there is quite a number of missing values in it (`NA`). This is because we kept the data of every farmer. Some farmers are in both datasets, but all the other farmers are only in one of the two datasets. When it is the case, the rest of the data is filled with NAs. 
 
 
 This is not what we want though. What we want is to only keep the combined data for those farmers that are in both datasets. We can achieve that using an inner join.
@@ -126,13 +130,14 @@ inner_join(experiment2017,interview2019,by=c("Farmer"="Name"))
 
 ```
 
-We have only 11 rows left, but these are the rows we are interested in, for which we can do our analysis. So let's save this merged dataset as an object called `MergedData`, to use in the next steps.
+As you see, we started again with 20 rows for one dataset and 71 rows for the other one, and after using `inner_join`, we are left with only 11 rows. These are the farmers for which we can do our analysis. So let's save this merged dataset as an object called `MergedData`, to use in the next steps.
 
 ```{r assign, exercise=TRUE}
 MergedData<-inner_join(experiment2017,interview2019,by=c("Farmer"="Name"))
 
 ```
 
+Remember that it's normal that we don't see any output, because we are saving the result as an object and not asking R to show us anything.
 
 ## More complex joining
 
@@ -145,7 +150,7 @@ https://rpubs.com/williamsurles/293454
 
 ## Going long
 
-Despite having two measures of yield per farmer, the experiment2017 dataset has only one row per farmer. This is because it is in what is known as "wide" format. To better picture what we mean by  "wide" format, let's imagine a few farmers that would have collected 4 measures of yield. One for each of three treatments, and one for the control parcel. The data for these farmers would look like the following:
+Despite having two measures of yield per farmer, the experiment2017 dataset has only one row per farmer. This is because it is in what is known as "wide" format. To better picture what we mean by  "wide" format, let's imagine a few farmers that would have collected 4 measures of yield. One for each of three treatments, and one for the control plot. The data for these farmers would look like the following:
 
 
 ```{r echo=FALSE, out.width="50%", fig.align='center'}
@@ -154,7 +159,7 @@ knitr::include_graphics("images/WideCCRP.JPG")
 
 
 
-But this is not the format which R generally likes to operate on - R much prefers "long" format where we have one row per observation. In our little example, we had 4 observations per farmer, so in "long" format, we would have four rows for each farmer and instead of 4 numeric yield variables, we would only have two columns. A numeric one containing the values of yield, and a categorical one indicating the treatment or type of parcel on which the yield was measured:
+But this is not the format which R generally likes to operate on - R much prefers "long" format where we have one row per observation. In our little example, we had 4 observations per farmer, so in "long" format, we would have four rows for each farmer and instead of 4 numeric yield variables, we would only have two columns. A numeric one containing the values of yield, and a categorical one indicating the treatment or type of plots on which the yield was measured:
 
 ```{r echo=FALSE, out.width="35%", fig.align='center'}
 knitr::include_graphics("images/longCCRP.jpg")
@@ -169,29 +174,29 @@ The `pivot_longer()` function from the `tidyr` library allows us to do this.
 
 ```{r gather0,exercise=TRUE}
 MergedData %>%
-  pivot_longer(cols=Control:Treatment, names_to="Parcel_type",values_to="Yield")
+  pivot_longer(cols=Control:Treatment, names_to="Plot_type",values_to="Yield")
 
 ```
 
 If we pipe into the function, we need to supply three arguments:
 
-* Which columns within the data are we 'pivotting' into the long format. We don't want all of the columns - only the ones which refer to the common attribute, that is the yield measures. We could use the function c() to indicate the columns to combine, but our two columns are next to each other, so we can use a slight shortcut by using a colon: `FirstColumn:LastColumn`. In our case we have only two columns, so it's not much of a shortcut though. Note that we do not need to use quotation marks when referencing existing columns. This argument is called "cols".   
+* Which columns within the data are we 'pivotting' into the long format. We don't want all of the columns - only the ones which refer to the common attribute, that is the yield measures. We could use the function c() to indicate the columns to combine: `c(Control, Treatment)`, but our two columns are next to each other, so we can use a slight shortcut by using a colon: `FirstColumn:LastColumn`. In our case we have only two columns, so it's not much of a shortcut though. Note that we do not need to use quotation marks when referencing existing columns. This argument is called "cols".   
 
-* The name of the new column where the existing column names will be placed in the restructured data. This argument is called "names_to" - it requires an input within quotation marks. In this case the columns are the two different types of parcels (treatment or control), so we can call it "Parcel_type" for example.  
+* The name of the new column where the existing column names will be placed in the restructured data. This argument is called "names_to" - it requires an input within quotation marks. In this case the columns are the two different types of plots (treatment or control), so we can call it "Plot_type" for example.  
 
-* The name of the new column where the data values will be placed in the restructured data. This argument is called "values_to" - it requires an input within quotation marks. In this case the values refer to the yield in the parcel, so it makes good sense to call it "Yield".  
+* The name of the new column where the data values will be placed in the restructured data. This argument is called "values_to" - it requires an input within quotation marks. In this case the values refer to the yield in the plot, so it makes good sense to call it "Yield".  
 
 If I wasn't using a pipe, the first argument of this function would need to be the dataframe.
 
 
-Note that this new data has 22 rows - 1 row for each type of parcel of each farmer.
+Note that this new data has 22 rows - 1 row for each type of plot of each farmer.
 
 In RStudio, you could see this in the environment pane; or by using the `dim()` function to get the dimensions. I am going to assign the previous step into a new object, called `LongData` and then check the dimensions this way to compare between the two data frames.
 
 
 ```{r gather1, exercise=TRUE}
 LongData<- MergedData %>%
-  pivot_longer(cols=Control:Treatment, names_to="Parcel_type",values_to="Yield")
+  pivot_longer(cols=Control:Treatment, names_to="Plot_type",values_to="Yield")
 
 dim(LongData)
 dim(MergedData)
@@ -203,32 +208,38 @@ Again, having the data in long format makes it much easier to analyse, plot or m
 
 ### Answering our original question
 
-Remember that our objective was to explore the relationship between the outcome of the 2017 experiment and the willingness to participate in a new one. There are various plots that we could make for that. A nice one is to show the yield on the y axis, the parcel type on the x axis, make lines connecting the yield of a same farmer so that each line represent one farmer, and add colour to the lines based on whether the farmer accepted or not to participate in a new experiment:
+Remember that our objective was to explore the relationship between the outcome of the 2017 experiment and the willingness to participate in a new one. There are various plots that we could make for that. A nice one is to show the yield on the y axis, the plot type on the x axis, make lines connecting the yield of a same farmer so that each line represent one farmer, and add colour to the lines based on whether the farmer accepted or not to participate in a new experiment:
 
 ```{r gather2, exercise=TRUE}
 LongData %>%
-  ggplot(aes(x=Parcel_type, y=Yield, color=Accept, group=Farmer))+
+  ggplot(aes(x=Plot_type, y=Yield, color=Accept, group=Farmer))+
   geom_line()
 ```
-Notice that it is the group easthetics that define which are the points connected by the lines. In our case, these are the points corresponding to a same farmer.
+Notice that it is the group aesthetics that define which are the points connected by the lines. In our case, these are the points corresponding to a same farmer.
 
-We can see that most of the lines that go down are red, that is most of the farmers who saw a decrease in yield between the control and treatment parcels during the 2017 experiment, did not want to participate in a new experiment according to the 2019 interview. In contrast, the lines that go up seem to often be blue.
+We can see that most of the lines that go down are red, that is most of the farmers who saw a decrease in yield between the control and treatment plots during the 2017 experiment, did not want to participate in a new experiment according to the 2019 interview. In contrast, the lines that go up seem to often be blue. This might be easier to see using facets:
 
+```{r gather3, exercise=TRUE}
+LongData %>%
+  ggplot(aes(x=Plot_type, y=Yield, color=Accept, group=Farmer))+
+  geom_line()+
+  facet_wrap(~Accept)
+```
 
 ## Going wide
 
 
 If we had our data in long format and wanted to go to wide format, we could use the function `pivot_wider()`, which is in effect the reverse of the `pivot_longer()` function. So it requires the reverse inputs:
 
-```{r gather3, exercise=TRUE}
+```{r gather4, exercise=TRUE}
 LongData %>%
-      pivot_wider(names_from=Parcel_type,values_from=Yield)
+      pivot_wider(names_from=Plot_type,values_from=Yield)
 ```
 
 * The names column from which each unique value in this column will become one of the column names in the new data. This argument is "names_from".  
 * The value column from the data - which will make up the contents of these new columns. This argument is "values_from".  
 
-So in this case the "names_from" column is `Parcel_type`and the "values_from" is `Yield`.
+So in this case the "names_from" column is `Plot_type`and the "values_from" is `Yield`.
 
 We got our data back in wide format!
 
