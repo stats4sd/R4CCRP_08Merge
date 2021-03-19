@@ -19,10 +19,7 @@ library(learnr)
 
 experiment2017<-read.csv("experiment2017.csv")
 interview2019<-read.csv("interview2019.csv")
-experiment2017$Farmer <- iconv(experiment2017$Farmer, to = "UTF-8")
-Encoding(experiment2017$Farmer) <- "UTF-8"
-interview2019$Name <- iconv(interview2019$Name, "UTF-8")
-Encoding(interview2019$Name) <- "UTF-8"
+
 
 MergedData<-inner_join(experiment2017,interview2019,by=c("Farmer"="Name"))
 
@@ -56,9 +53,9 @@ library(tidyr)
 
 ## Data for this session
 
-In this session we will use two related fictive datasets. The first one, called `experiment2017` is an on farm experiment, where each of 20 farmers has collected values of yield for two plots, one where a new treatment has been applied (column "Treatment"), and one where this new treatment has not been applied (column "Control"). You can download this dataset [here](https://github.com/stats4sd/R4CCRP_08Merge/raw/main/experiment2017.csv)  
+In this session we will use two related fictive datasets. The first one, called `experiment2017` is an on farm experiment, where each of 20 farmers has collected values of yield for two plots, one where a new treatment has been applied (column "Treatment"), and one where this new treatment has not been applied (column "Control").  
 
-The other dataset called `interview2019` contains the responses of 71 farmers - some of which participated in the 2017 experiment - when asked whether they would accept to participate to a new experiment (column "Accept"). You can download this dataset [here](https://github.com/stats4sd/R4CCRP_08Merge/raw/main/interview2019.csv) 
+The other dataset called `interview2019` contains the responses of 71 farmers - some of which participated in the 2017 experiment - when asked whether they would accept to participate to a new experiment (column "Accept"). You can download these two datasets [here](https://github.com/stats4sd/R4CCRP_08Merge/raw/main/data-merge.zip) 
 
 Our goal will be to combine these two datasets in order to explore whether for a farmer, the outcome of the 2017 experiment is related to their willingness to participate in a new experiment.
 
@@ -168,7 +165,7 @@ knitr::include_graphics("images/longCCRP.jpg")
 And if you think to when we've used `ggplot2`, we always had one unique variable for our y argument, and we used categorical variables to separate it into groups, facets, colours and it was similar for modelling. We had one dependant variable only and the groups of the Anova were defined by come categorical variable. So in general long formats work much better than wide formats for making graphs or doing some statistical modelling.
 
 
-And to help us analyse our dataframe `MergedData` where the experimental data is in long format, we should turn it into long format.
+And to help us analyse our dataframe `MergedData` where the experimental data is in wide format, we should turn it into long format.
 
 The `pivot_longer()` function from the `tidyr` library allows us to do this. 
 
@@ -217,7 +214,7 @@ LongData %>%
 ```
 Notice that it is the group aesthetics that define which are the points connected by the lines. In our case, these are the points corresponding to a same farmer.
 
-We can see that most of the lines that go down are red, that is most of the farmers who saw a decrease in yield between the control and treatment plots during the 2017 experiment, did not want to participate in a new experiment according to the 2019 interview. In contrast, the lines that go up seem to often be blue. This might be easier to see using facets:
+We can see that most of the lines that go down are red, that is most of the farmers who saw a decrease in yield between the control and treatment plots during the 2017 experiment, did not want to participate in a new experiment according to the 2019 interview. In contrast, the lines that go up are blue. This might be easier to see using facets:
 
 ```{r gather3, exercise=TRUE}
 LongData %>%
